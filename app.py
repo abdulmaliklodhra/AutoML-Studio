@@ -599,7 +599,7 @@ with st.sidebar:
     )
     load_sample_btn = st.button(
         "⬇️ Load Sample Dataset",
-        width="stretch",
+        use_container_width=True,
         disabled=(SAMPLE_DATASETS.get(ds_choice) is None),
         key="load_sample_btn",
     )
@@ -768,7 +768,7 @@ with st.sidebar:
         _no_features = len(st.session_state.get("selected_features") or []) == 0
         run_btn = st.button(
             "🚀 Run ML Pipeline",
-            width="stretch",
+            use_container_width=True,
             disabled=_no_features,
         )
     else:
@@ -905,7 +905,7 @@ else:
             "Unique": [df[c].nunique() for c in df.columns],
         })
         st.markdown("#### 📐 Column Profile")
-        st.dataframe(_dtype_df, width="stretch", height=300)
+        st.dataframe(_dtype_df, use_container_width=True, height=300)
 
         # Missing values bar chart
         _miss = df.isnull().sum()
@@ -922,17 +922,17 @@ else:
                 font=dict(color="#334155", family="Inter"),
                 title_font=dict(size=14, color="#d97706"), height=300,
             )
-            st.plotly_chart(_fig_miss, width="stretch")
+            st.plotly_chart(_fig_miss, use_container_width=True)
         else:
             st.markdown('<div class="success-box">✅ No missing values found in this dataset!</div>',
                         unsafe_allow_html=True)
 
         with st.expander("🔍 Data Preview (first 100 rows)", expanded=False):
-            st.dataframe(df.head(100), width="stretch", height=260)
+            st.dataframe(df.head(100), use_container_width=True, height=260)
 
         # Descriptive stats
         with st.expander("📊 Descriptive Statistics", expanded=False):
-            st.dataframe(df.describe(include="all"), width="stretch")
+            st.dataframe(df.describe(include="all"), use_container_width=True)
 
     with eda_tab2:
         _num_cols = df.select_dtypes(include=np.number).columns.tolist()
@@ -958,12 +958,12 @@ else:
             _fig_d.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
                                   font=dict(color="#334155"), title_font=dict(color="#2563eb", size=15),
                                   height=380)
-            st.plotly_chart(_fig_d, width="stretch")
+            st.plotly_chart(_fig_d, use_container_width=True)
 
         with _right_d:
             # Target distribution
             _tgt_fig = build_target_distribution(df, target_col, task_type)
-            st.plotly_chart(_tgt_fig, width="stretch")
+            st.plotly_chart(_tgt_fig, use_container_width=True)
 
         # Column stats
         if _dist_col in _num_cols:
@@ -983,7 +983,7 @@ else:
         with _corr_left:
             _corr_fig = build_correlation_heatmap(df)
             if _corr_fig:
-                st.pyplot(_corr_fig, width="stretch")
+                st.pyplot(_corr_fig, use_container_width=True)
             else:
                 st.info("Need at least 2 numeric columns for correlation.")
         with _corr_right:
@@ -998,7 +998,7 @@ else:
                 _pairs.columns = ["Feature A", "Feature B", "Correlation"]
                 _pairs = _pairs.sort_values("Correlation", ascending=False).head(15)
                 _pairs["Correlation"] = _pairs["Correlation"].round(4)
-                st.dataframe(_pairs, width="stretch", height=400)
+                st.dataframe(_pairs, use_container_width=True, height=400)
 
     with eda_tab4:
         _sc_cols = df.columns.tolist()
@@ -1021,7 +1021,7 @@ else:
             title_font=dict(size=15, color="#2563eb"), height=450,
         )
         _scatter_fig.update_traces(marker=dict(size=6))
-        st.plotly_chart(_scatter_fig, width="stretch")
+        st.plotly_chart(_scatter_fig, use_container_width=True)
 
     # ── Task type display ─────────────────────────────────────────────────────
     st.markdown("---")
@@ -1271,7 +1271,7 @@ else:
             <div class="info-box">
                 🏅 The <strong>top row</strong> is the best-performing model selected by PyCaret.
             </div>""", unsafe_allow_html=True)
-            st.dataframe(compare_df, width="stretch", height=450)
+            st.dataframe(compare_df, use_container_width=True, height=450)
             csv_data = compare_df.to_csv(index=True).encode("utf-8")
             st.download_button("⬇️ Download Leaderboard CSV", csv_data,
                                file_name=f"model_comparison_{task_type}.csv", mime="text/csv")
@@ -1279,7 +1279,7 @@ else:
         with tab2:
             st.markdown("#### Model Performance Comparison")
             bar_fig = build_metric_bar_chart(compare_df, task_type)
-            st.plotly_chart(bar_fig, width="stretch")
+            st.plotly_chart(bar_fig, use_container_width=True)
 
             if task_type == "classification":
                 alt_metrics = [c for c in ['F1', 'Kappa', 'Recall', 'Prec.', 'MCC'] if c in compare_df.columns]
@@ -1301,7 +1301,7 @@ else:
                     xaxis=dict(tickangle=-30, color='#64748b'),
                     yaxis=dict(color='#64748b'), showlegend=False, height=360,
                 )
-                st.plotly_chart(_fig2, width="stretch")
+                st.plotly_chart(_fig2, use_container_width=True)
 
         with tab3:
             st.markdown("#### 🕸️ Multi-Metric Radar Chart (Top 5 Models)")
@@ -1339,7 +1339,7 @@ else:
                         legend=dict(font=dict(color='#334155')),
                         height=500,
                     )
-                    st.plotly_chart(_radar_fig, width="stretch")
+                    st.plotly_chart(_radar_fig, use_container_width=True)
                 else:
                     st.info("Not enough metrics for radar chart.")
             else:
@@ -1349,14 +1349,14 @@ else:
             _sel_feats = st.session_state.get("selected_features") or [c for c in df.columns if c != target_col]
             fi_fig = build_feature_importance_chart(final_model, _sel_feats)
             if fi_fig:
-                st.plotly_chart(fi_fig, width="stretch")
+                st.plotly_chart(fi_fig, use_container_width=True)
             else:
                 st.markdown("""
                 <div class="warning-box">
                     ⚠️ Feature importance not available for this model type.
                 </div>""", unsafe_allow_html=True)
                 st.markdown("#### 📊 Feature Statistics")
-                st.dataframe(df.drop(columns=[target_col]).describe(), width="stretch")
+                st.dataframe(df.drop(columns=[target_col]).describe(), use_container_width=True)
 
         with tab5:
             st.markdown("#### 🔬 Model Diagnostics on Holdout Set")
@@ -1382,12 +1382,12 @@ else:
                             font=dict(color='#334155', family='Inter'),
                             title_font=dict(size=16, color='#2563eb'), height=420,
                         )
-                        st.plotly_chart(_cm_fig, width="stretch")
+                        st.plotly_chart(_cm_fig, use_container_width=True)
 
                         # Classification Report
                         with st.expander("📋 Full Classification Report"):
                             _report = classification_report(_y_true, _y_pred, output_dict=True)
-                            st.dataframe(pd.DataFrame(_report).T.round(4), width="stretch")
+                            st.dataframe(pd.DataFrame(_report).T.round(4), use_container_width=True)
                     else:
                         st.info("Prediction column not found in holdout results.")
 
@@ -1417,7 +1417,7 @@ else:
                                 font=dict(color='#334155'), title_font=dict(color='#2563eb', size=15),
                                 height=380,
                             )
-                            st.plotly_chart(_avp_fig, width="stretch")
+                            st.plotly_chart(_avp_fig, use_container_width=True)
 
                         with _d2:
                             _res_fig = px.scatter(
@@ -1432,7 +1432,7 @@ else:
                                 font=dict(color='#334155'), title_font=dict(color='#7c3aed', size=15),
                                 height=380,
                             )
-                            st.plotly_chart(_res_fig, width="stretch")
+                            st.plotly_chart(_res_fig, use_container_width=True)
 
                         # Residuals histogram
                         _rh_fig = px.histogram(_residuals, nbins=40, title="Residuals Distribution",
@@ -1442,7 +1442,7 @@ else:
                             font=dict(color='#334155'), title_font=dict(color='#059669', size=14),
                             height=300,
                         )
-                        st.plotly_chart(_rh_fig, width="stretch")
+                        st.plotly_chart(_rh_fig, use_container_width=True)
                     else:
                         st.info("Prediction column not found in holdout results.")
             else:
@@ -1471,7 +1471,7 @@ else:
                     _input_vals[_fc] = _col_ui.selectbox(
                         _fc, options=_uniq, key=f"pred_{_fc}")
 
-            if st.button("🔮 Run Prediction", key="predict_btn", width="content"):
+            if st.button("🔮 Run Prediction", key="predict_btn", use_container_width=False):
                 try:
                     _input_df = pd.DataFrame([_input_vals])
                     if task_type == "classification":
@@ -1495,7 +1495,7 @@ else:
                         </div>""", unsafe_allow_html=True)
 
                     with st.expander("📋 Full Prediction DataFrame"):
-                        st.dataframe(_pred_result, width="stretch")
+                        st.dataframe(_pred_result, use_container_width=True)
 
                 except Exception as _pe:
                     st.error(f"Prediction error: {_pe}")
@@ -1503,7 +1503,7 @@ else:
         with tab7:
             st.markdown("#### PyCaret Setup Configuration")
             if setup_df is not None:
-                st.dataframe(setup_df, width="stretch")
+                st.dataframe(setup_df, use_container_width=True)
             else:
                 st.info("Setup config not available.")
 
