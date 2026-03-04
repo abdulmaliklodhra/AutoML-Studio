@@ -357,6 +357,20 @@ if "ran_pipeline" not in st.session_state:
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
+def safe_dataframe(df):
+    try:
+        if not isinstance(df, pd.DataFrame):
+            return df
+        # Convert object/mixed type columns to string to avoid PyArrow serialization errors
+        display_df = df.copy()
+        for col in display_df.select_dtypes(include=['object', 'category']).columns:
+            display_df[col] = display_df[col].astype(str)
+        return display_df
+    except:
+        return df
+
+
 def detect_task_type(df: pd.DataFrame, target: str) -> str:
     col = df[target].dropna()
     n_unique = col.nunique()
@@ -905,7 +919,7 @@ else:
             "Unique": [df[c].nunique() for c in df.columns],
         })
         st.markdown("#### 📐 Column Profile")
-        st.dataframe(_dtype_df, use_container_width=True, height=300)
+        st.dataframe(safe_dataframe(_dtype_df), use_container_width=True, height=300)
 
         # Missing values bar chart
         _miss = df.isnull().sum()
@@ -928,11 +942,11 @@ else:
                         unsafe_allow_html=True)
 
         with st.expander("🔍 Data Preview (first 100 rows)", expanded=False):
-            st.dataframe(df.head(100), use_container_width=True, height=260)
+            st.dataframe(safe_dataframe(df.head(100)), use_container_width=True, height=260)
 
         # Descriptive stats
         with st.expander("📊 Descriptive Statistics", expanded=False):
-            st.dataframe(df.describe(include="all"), use_container_width=True)
+            st.dataframe(safe_dataframe(df.describe(include="all")), use_container_width=True)
 
     with eda_tab2:
         _num_cols = df.select_dtypes(include=np.number).columns.tolist()
@@ -998,7 +1012,7 @@ else:
                 _pairs.columns = ["Feature A", "Feature B", "Correlation"]
                 _pairs = _pairs.sort_values("Correlation", ascending=False).head(15)
                 _pairs["Correlation"] = _pairs["Correlation"].round(4)
-                st.dataframe(_pairs, use_container_width=True, height=400)
+                st.dataframe(safe_dataframe(_pairs), use_container_width=True, height=400)
 
     with eda_tab4:
         _sc_cols = df.columns.tolist()
@@ -1271,7 +1285,7 @@ else:
             <div class="info-box">
                 🏅 The <strong>top row</strong> is the best-performing model selected by PyCaret.
             </div>""", unsafe_allow_html=True)
-            st.dataframe(compare_df, use_container_width=True, height=450)
+            st.dataframe(safe_dataframe(compare_df), use_container_width=True, height=450)
             csv_data = compare_df.to_csv(index=True).encode("utf-8")
             st.download_button("⬇️ Download Leaderboard CSV", csv_data,
                                file_name=f"model_comparison_{task_type}.csv", mime="text/csv")
@@ -1356,7 +1370,7 @@ else:
                     ⚠️ Feature importance not available for this model type.
                 </div>""", unsafe_allow_html=True)
                 st.markdown("#### 📊 Feature Statistics")
-                st.dataframe(df.drop(columns=[target_col]).describe(), use_container_width=True)
+                st.dataframe(safe_dataframe(df.drop(columns=[target_col]).describe()), use_container_width=True)
 
         with tab5:
             st.markdown("#### 🔬 Model Diagnostics on Holdout Set")
@@ -1387,7 +1401,7 @@ else:
                         # Classification Report
                         with st.expander("📋 Full Classification Report"):
                             _report = classification_report(_y_true, _y_pred, output_dict=True)
-                            st.dataframe(pd.DataFrame(_report).T.round(4), use_container_width=True)
+                            st.dataframe(safe_dataframe(pd.DataFrame(_report).T.round(4)), use_container_width=True)
                     else:
                         st.info("Prediction column not found in holdout results.")
 
@@ -1495,7 +1509,7 @@ else:
                         </div>""", unsafe_allow_html=True)
 
                     with st.expander("📋 Full Prediction DataFrame"):
-                        st.dataframe(_pred_result, use_container_width=True)
+                        st.dataframe(safe_dataframe(_pred_result), use_container_width=True)
 
                 except Exception as _pe:
                     st.error(f"Prediction error: {_pe}")
@@ -1503,7 +1517,7 @@ else:
         with tab7:
             st.markdown("#### PyCaret Setup Configuration")
             if setup_df is not None:
-                st.dataframe(setup_df, use_container_width=True)
+                st.dataframe(safe_dataframe(setup_df), use_container_width=True)
             else:
                 st.info("Setup config not available.")
 
